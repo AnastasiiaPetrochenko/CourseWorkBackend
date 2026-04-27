@@ -1,0 +1,16 @@
+[
+    {
+      "title": "Матриця",
+      "duration_minutes": 136,
+      "age_rating": "16+",
+      "description": "Хакер Нео дізнається правду про реальність і приєднується до повстанців.",
+      "image_url": "https://image.tmdb.org/t/p/w500/f89U3ADr1oiB1s9GkdPOEpXUk5H.jpg"
+    },
+    {
+      "title": "Інтерстеллар",
+      "duration_minutes": 169,
+      "age_rating": "12+",
+      "description": "Команда дослідників подорожує крізь червоточину в космосі, щоб врятувати людство.",
+      "image_url": "https://image.tmdb.org/t/p/w500/gEU2QniE6E77NI6lCU6MxlNBvIx.jpg"
+    }
+  ]
