@@ -1,6 +1,7 @@
 const pool = require('../config/db');
 const fs = require('fs');
 const path = require('path');
+const bcrypt = require('bcrypt');
 
 const getStatistics = async (req, res) => {
     try {
@@ -80,8 +81,68 @@ const importMovies = async (req, res) => {
     }
 };
 
+const getEmployees = async (req, res) => {
+    try {
+        const employees = await pool.query('SELECT id, login, full_name, role FROM employees ORDER BY id ASC');
+        res.json(employees.rows);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Помилка при отриманні працівників" });
+    }
+};
+
+const createEmployee = async (req, res) => {
+    try {
+        const { login, full_name, password, role } = req.body;
+        
+        if (!login || !full_name || !password || !role) {
+            return res.status(400).json({ error: "Всі поля є обов'язковими" });
+        }
+
+        const existing = await pool.query('SELECT * FROM employees WHERE login = $1', [login]);
+        if (existing.rows.length > 0) {
+            return res.status(400).json({ error: "Працівник з таким логіном вже існує" });
+        }
+
+        const hashedPwd = await bcrypt.hash(password, 10);
+        const newEmployee = await pool.query(
+            'INSERT INTO employees (login, full_name, password_hash, role) VALUES ($1, $2, $3, $4) RETURNING id, login, full_name, role',
+            [login, full_name, hashedPwd, role]
+        );
+
+        res.status(201).json(newEmployee.rows[0]);
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Помилка при створенні працівника" });
+    }
+};
+
+const deleteEmployee = async (req, res) => {
+    try {
+        const { id } = req.params;
+        
+        if (parseInt(id) === req.user.id) {
+            return res.status(400).json({ error: "Ви не можете видалити власний акаунт" });
+        }
+
+        const result = await pool.query('DELETE FROM employees WHERE id = $1 RETURNING id', [id]);
+        
+        if (result.rows.length === 0) {
+            return res.status(404).json({ error: "Працівника не знайдено" });
+        }
+
+        res.json({ message: "Працівника успішно видалено" });
+    } catch (err) {
+        console.error(err.message);
+        res.status(500).json({ error: "Помилка при видаленні працівника" });
+    }
+};
+
 module.exports = {
     getStatistics,
     getLogs,
-    importMovies
+    importMovies,
+    getEmployees,
+    createEmployee,
+    deleteEmployee
 };
